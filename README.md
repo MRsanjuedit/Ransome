@@ -1,4 +1,4 @@
-# Recursive File Encryptor/Decryptor
+# Rannsomeware- MINI
 
 A Python-based utility to **encrypt and decrypt files** in a folder and all its subfolders using **Fernet symmetric encryption** from the `cryptography` library. 
 
