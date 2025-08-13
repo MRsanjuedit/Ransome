@@ -14,27 +14,29 @@ def load_key(key_file):
     with open(key_file, "rb") as f:
         return f.read()
 
-# === Decrypt All Files Except Skipped Ones ===
+# === Decrypt All Files Except Skipped Ones (Recursive) ===
 def decrypt_files(folder_path, fernet):
-    for filename in os.listdir(folder_path):
-        if filename in SKIP_FILES:
-            continue
+    for root, _, files in os.walk(folder_path):
+        for filename in files:
+            if filename in SKIP_FILES:
+                print(f"[i] Skipped: {filename}")
+                continue
 
-        file_path = os.path.join(folder_path, filename)
+            file_path = os.path.join(root, filename)
 
-        if os.path.isfile(file_path):
-            try:
-                with open(file_path, "rb") as file:
-                    encrypted_data = file.read()
+            if os.path.isfile(file_path):
+                try:
+                    with open(file_path, "rb") as file:
+                        encrypted_data = file.read()
 
-                decrypted_data = fernet.decrypt(encrypted_data)
+                    decrypted_data = fernet.decrypt(encrypted_data)
 
-                with open(file_path, "wb") as file:
-                    file.write(decrypted_data)
+                    with open(file_path, "wb") as file:
+                        file.write(decrypted_data)
 
-                print(f"[+] Decrypted: {filename}")
-            except Exception as e:
-                print(f"[!] Failed to decrypt {filename}: {e}")
+                    print(f"[+] Decrypted: {file_path}")
+                except Exception as e:
+                    print(f"[!] Failed to decrypt {file_path}: {e}")
 
 # === MAIN ===
 if __name__ == "__main__":
